@@ -1,9 +1,12 @@
 package com.example.aspecttp.classes.dummyApp;
 
+import com.example.aspecttp.classes.context.Logging;
+
 public class ArraySorter {
 
     public static int[] insertSort(int[] array)
     {
+        Logging.info("Insert sort starting");
         for (int i = 1; i < array.length; i++){
             int temp = array[i];
             int j = i - 1;
@@ -20,6 +23,7 @@ public class ArraySorter {
     }
 
     public static void bubbleSort(int[] array) {
+        Logging.info("Bubble sort starting");
         for (int i = 0; i < array.length - 1; i++) {
             for (int j = 0; j < array.length - i - 1; j++) {
                 if (array[j] > array[j + 1]) {
@@ -32,6 +36,7 @@ public class ArraySorter {
     }
 
     public static void selectionSort(int[] array) {
+        Logging.info("Selection sort starting");
         for (int i = 0; i < array.length - 1; i++) {
             int minIndex = i;
 
@@ -48,6 +53,7 @@ public class ArraySorter {
     }
 
     public static void mergeSort(int[] array) {
+        Logging.info("Merge sort starting");
         if (array.length < 2) return;
 
         int mid = array.length / 2;
@@ -74,6 +80,7 @@ public class ArraySorter {
     }
 
     public static void quickSort(int[] array, int low, int high) {
+        Logging.info("Quick sort starting");
         if (low < high) {
             int pivotIndex = partition(array, low, high);
             quickSort(array, low, pivotIndex - 1);

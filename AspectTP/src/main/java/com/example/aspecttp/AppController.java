@@ -1,35 +1,118 @@
 package com.example.aspecttp;
 
+import com.example.aspecttp.classes.buses.EventBus;
+import com.example.aspecttp.classes.context.Logging;
+import com.example.aspecttp.classes.context.TelemetryContext;
+import com.example.aspecttp.classes.dummyApp.ArrayGenerator;
+import com.example.aspecttp.classes.dummyApp.ArraySorter;
+import com.example.aspecttp.classes.events.ErrorEvent;
+import com.example.aspecttp.classes.events.LogEvent;
+import com.example.aspecttp.classes.events.MetricEvent;
+import com.example.aspecttp.subscriber.*;
+import com.example.aspecttp.types.TelemetryType;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 
+import java.time.LocalDateTime;
+import java.util.Random;
+
 public class AppController {
+
+    private final ObservableList<TelemetryViewItem> allItems =
+            FXCollections.observableArrayList();
+
+    MetricSubscriber metricSubscriber = new MetricSubscriber(allItems);
+    LogSubscriber logSubscriber = new LogSubscriber(allItems);
+    ErrorSubscriber errorSubscriber = new ErrorSubscriber(allItems);
+
     @FXML
     private TextField searchField;
 
     @FXML
-    private TableView<?> logTable; // You can change <?> to your specific Log object type later
+    private TableView<TelemetryViewItem> logTable; // You can change <?> to your specific Log object type later
 
     @FXML
-    private TableColumn<?, ?> typeColumn;
+    private TableColumn<TelemetryViewItem, TelemetryType> typeColumn;
 
     @FXML
-    private TableColumn<?, ?> timeColumn;
+    private TableColumn<TelemetryViewItem, LocalDateTime> timeColumn;
 
     @FXML
-    private TableColumn<?, ?> messageColumn;
+    private TableColumn<TelemetryViewItem, String> messageColumn;
 
     @FXML
     public void initialize() {
+
         System.out.println("[Controller] View components initialized successfully!");
+
+        typeColumn.setCellValueFactory(data ->
+                new SimpleObjectProperty<>(data.getValue().getType())
+        );
+
+        timeColumn.setCellValueFactory(data ->
+                new SimpleObjectProperty<>(data.getValue().getTime())
+        );
+
+        messageColumn.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getMessage())
+        );
+
+        EventBus<MetricEvent> busMetric = TelemetryContext.getBus(MetricEvent.class);
+        busMetric.subscribe(metricSubscriber);
+
+        EventBus<ErrorEvent> busError = TelemetryContext.getBus(ErrorEvent.class);
+        busError.subscribe(errorSubscriber);
+
+        EventBus<LogEvent> busLog = TelemetryContext.getBus(LogEvent.class);
+        busLog.subscribe(logSubscriber);
+
+        logTable.setItems(allItems);
     }
 
     @FXML
     private void handleClearLogs() {
-        System.out.println("Clear logs button clicked!");
-        // Your logic to clear logs will go here
+        logTable.getItems().clear();
+        allItems.clear();
+    }
+
+    @FXML
+    private void executeRandomOperation() {
+        var arrayGenerator = new ArrayGenerator(-1000,1000);
+        var array = arrayGenerator.generateRandomArray();
+
+        var rand = new Random();
+        int randomMethod = rand.nextInt(0, 5);
+        switch (randomMethod) {
+            case 0 -> {
+                ArraySorter.insertSort(array);
+            }
+
+            case 1 -> {
+                ArraySorter.selectionSort(array);
+            }
+
+            case 2 -> {
+                ArraySorter.bubbleSort(array);
+            }
+
+            case 3 -> {
+                ArraySorter.mergeSort(array);
+            }
+
+            case 4 -> {
+                ArraySorter.quickSort(array,0, array.length-1);
+            }
+
+            default -> throw new IllegalStateException("Unexpected value: " + randomMethod);
+        }
+
+        Logging.info(java.util.Arrays.toString(array));
     }
 }

@@ -11,11 +11,10 @@ import java.util.Map;
 @Aspect
 public class MetricAspect {
 
-    @Around("execution(* com.example.*(..))")
+    @Around("execution(* com.example.aspecttp.classes.dummyApp..*(..))")
     public Object measureExecutionTime(ProceedingJoinPoint pjp) throws Throwable {
 
         long start = System.nanoTime();
-
         Object result = pjp.proceed();
 
         long durationMs = (System.nanoTime() - start) / 1_000_000;

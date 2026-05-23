@@ -6,8 +6,8 @@ import java.util.Map;
 
 public class LogEvent extends TelemetryEvent {
 
-    String message;
-    LogLevel level;
+    public String message;
+    public LogLevel level;
 
     public LogEvent(String className, String methodName, Map<String, Object> metadata, String message, LogLevel level)
     {
