@@ -101,7 +101,6 @@ public class MetricSubscriber implements EventSubscriber<MetricEvent> {
         if (unit != null && !unit.isEmpty()) {
             sb.append(" ").append(unit);
         }
-
         sb.append("\n");
 
     }
