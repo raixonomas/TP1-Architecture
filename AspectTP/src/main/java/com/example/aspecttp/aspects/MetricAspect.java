@@ -1,16 +1,21 @@
 package com.example.aspecttp.aspects;
 
-import com.example.aspecttp.classes.context.TelemetryContext;
-import com.example.aspecttp.classes.events.MetricEvent;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-
-import java.lang.management.*;
+import java.lang.management.GarbageCollectorMXBean;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
+import java.lang.management.ThreadMXBean;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+
+import com.example.aspecttp.classes.context.TelemetryContext;
+import com.example.aspecttp.classes.events.MetricEvent;
 
 @Aspect
 public class MetricAspect {
