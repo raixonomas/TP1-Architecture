@@ -9,11 +9,30 @@ import org.aspectj.lang.annotation.Aspect;
 import java.lang.management.*;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Aspect
 public class MetricAspect {
 
-    @Around("execution(* com.example.aspecttp.classes.dummyApp.PoolBenchmark..*(..))")
+    private final ExecutorService telemetryExecutor = Executors.newFixedThreadPool(
+            Runtime.getRuntime().availableProcessors(),
+            runnable -> {
+                Thread thread = new Thread(runnable);
+                thread.setDaemon(true);
+                thread.setName("Telemetry-Worker-Pool");
+                return thread;
+            }
+    );
+
+    @Around("execution(* com.example.aspecttp.classes.dummyApp.PoolBenchmark..*(..)) " +
+            "&& !execution(* com.example.aspecttp.classes.dummyApp..work(..)) " +
+            "&& !execution(* com.example.aspecttp.classes.dummyApp..execute(..)) " +
+            "&& !execution(* com.example.aspecttp.classes.dummyApp..submit(..)) " +
+            "&& !execution(* com.example.aspecttp.classes.dummyApp..forceCleanup(..)) " +
+            "&& !execution(* *..lambda$*(..)) " +
+            "&& !execution(* java.lang.Runnable+.run(..)) " +
+            "&& !execution(* java.util.concurrent.Callable+.call(..))")
     public Object measureMetrics(ProceedingJoinPoint pjp) throws Throwable {
 
         Runtime runtime = Runtime.getRuntime();
@@ -134,40 +153,50 @@ public class MetricAspect {
                         ? 1000.0 / executionTimeMs
                         : 0;
 
+        String className = pjp.getSignature().getDeclaringTypeName();
+        String methodName = pjp.getSignature().getName();
+
         // =========================
         // CREATE EVENT
         // =========================
 
-        Map<String, Object> metrics = Map.ofEntries(
-                Map.entry("execution_time_ms", executionTimeMs),
-                Map.entry("cpu_usage_ms", cpuUsageMs),
-                Map.entry("process_cpu_percent", processCpuLoad),
-                Map.entry("operations_per_second", operationsPerSecond),
+        telemetryExecutor.submit(() -> {
+            try {
+                Map<String, Object> metrics = Map.ofEntries(
+                        Map.entry("execution_time_ms", executionTimeMs),
+                        Map.entry("cpu_usage_ms", cpuUsageMs),
+                        Map.entry("process_cpu_percent", processCpuLoad),
+                        Map.entry("operations_per_second", operationsPerSecond),
 
-                Map.entry("memory_before_kb", usedMemoryBefore / 1024),
-                Map.entry("memory_after_kb", usedMemoryAfter / 1024),
-                Map.entry("allocated_memory_kb", allocatedMemory / 1024),
-                Map.entry("heap_used_mb", heapUsedMb),
-                Map.entry("heap_max_mb", heapMaxMb),
+                        Map.entry("memory_before_kb", usedMemoryBefore / 1024),
+                        Map.entry("memory_after_kb", usedMemoryAfter / 1024),
+                        Map.entry("allocated_memory_kb", allocatedMemory / 1024),
+                        Map.entry("heap_used_mb", heapUsedMb),
+                        Map.entry("heap_max_mb", heapMaxMb),
 
-                Map.entry("gc_collections", gcCollections),
-                Map.entry("gc_time_ms", gcTimeMs),
+                        Map.entry("gc_collections", gcCollections),
+                        Map.entry("gc_time_ms", gcTimeMs),
 
-                Map.entry("threads_before", threadCountBefore),
-                Map.entry("threads_after", threadCountAfter)
-        );
+                        Map.entry("threads_before", threadCountBefore),
+                        Map.entry("threads_after", threadCountAfter)
+                );
 
-        MetricEvent event = new MetricEvent(
-                pjp.getSignature().getDeclaringTypeName(),
-                pjp.getSignature().getName(),
-                metrics,
-                "execution_time_ms",
-                executionTimeMs
-        );
+                MetricEvent event = new MetricEvent(
+                        className,
+                        methodName,
+                        metrics,
+                        "execution_time_ms",
+                        (double) executionTimeMs
+                );
 
-        TelemetryContext
-                .getBus(MetricEvent.class)
-                .publish(event);
+                TelemetryContext
+                        .getBus(MetricEvent.class)
+                        .publish(event);
+
+            } catch (Exception e) {
+                System.err.println("[Telemetry Error] Async processing failed: " + e.getMessage());
+            }
+        });
 
         return result;
     }

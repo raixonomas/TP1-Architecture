@@ -54,15 +54,15 @@ public class AppController {
         System.out.println("[Controller] View components initialized successfully!");
 
         typeColumn.setCellValueFactory(data ->
-                new SimpleObjectProperty<>(data.getValue().getType())
+                new javafx.beans.property.ReadOnlyObjectWrapper<>(data.getValue().getType())
         );
 
         timeColumn.setCellValueFactory(data ->
-                new SimpleObjectProperty<>(data.getValue().getTime())
+                new javafx.beans.property.ReadOnlyObjectWrapper<>(data.getValue().getTime())
         );
 
         messageColumn.setCellValueFactory(data ->
-                new SimpleStringProperty(data.getValue().getMessage())
+                new javafx.beans.property.ReadOnlyStringWrapper(data.getValue().getMessage())
         );
 
         EventBus<MetricEvent> busMetric = TelemetryContext.getBus(MetricEvent.class);
@@ -85,6 +85,7 @@ public class AppController {
 
     @FXML
     private void executeRandomOperation() throws InterruptedException {
-        PoolBenchmark.benchmarkHighFrequencyLightObject();
+        PoolBenchmark.startPoolBenchmark();
+
     }
 }

@@ -11,7 +11,7 @@ import java.util.Map;
 @Aspect
 public class ErrorAspect {
 
-    @Around("execution(* com.example.aspecttp.classes.dummyApp..*(..))")
+    //@Around("execution(* com.example.aspecttp.classes.dummyApp..*(..))")
     public Object captureErrors(ProceedingJoinPoint pjp) throws Throwable {
 
         try {

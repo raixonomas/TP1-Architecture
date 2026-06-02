@@ -4,10 +4,11 @@ import com.example.aspecttp.classes.buses.EventBus;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TelemetryContext {
 
-    private static final Map<Class<?>, Object> buses = new HashMap<>();
+    private static final Map<Class<?>, Object> buses = new ConcurrentHashMap<>();;
 
     public static <T> void registerBus(Class<T> type, EventBus<T> bus) {
         buses.put(type, bus);
@@ -15,6 +16,6 @@ public class TelemetryContext {
 
     @SuppressWarnings("unchecked")
     public static <T> EventBus<T> getBus(Class<T> type) {
-        return (EventBus<T>) buses.get(type);
+        return (EventBus<T>) buses.computeIfAbsent(type, k -> new EventBus<>());
     }
 }

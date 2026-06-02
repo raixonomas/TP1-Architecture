@@ -10,6 +10,7 @@ public class PoolBenchmark {
     public static void startPoolBenchmark() {
 
         // OBJETS LEGERS
+        forceCleanup();
 
         // Haute fréquence de création/destruction (moins de travail par objet) avec des objets légers, sans pooling.
         try {
@@ -19,6 +20,9 @@ public class PoolBenchmark {
             throw new RuntimeException(e);
         }
 
+        forceCleanup();
+
+
         // Haute fréquence de création/destruction (moins de travail par objet) avec des objets légers, avec pooling.
         try {
             Logging.info("Executing benchmark : high frequency, light object, pooling");
@@ -26,6 +30,9 @@ public class PoolBenchmark {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        forceCleanup();
+
 
         // Basse fréquence de création/destruction (plus de travail par objet) avec des objets légers, sans pooling.
         try {
@@ -35,6 +42,9 @@ public class PoolBenchmark {
             throw new RuntimeException(e);
         }
 
+        forceCleanup();
+
+
         // Basse fréquence de création/destruction (plus de travail par objet) avec des objets légers, avec pooling.
         try {
             Logging.info("Executing benchmark : low frequency, light object, pooling");
@@ -42,6 +52,8 @@ public class PoolBenchmark {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        forceCleanup();
 
 
         // OBJETS LOURDS
@@ -54,6 +66,9 @@ public class PoolBenchmark {
             throw new RuntimeException(e);
         }
 
+        forceCleanup();
+
+
         // Haute fréquence de création/destruction (moins de travail par objet) avec des objets lourds, avec pooling.
         try {
             Logging.info("Executing benchmark : high frequency, heavy object, pooling");
@@ -61,6 +76,9 @@ public class PoolBenchmark {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        forceCleanup();
+
 
         // Basse fréquence de création/destruction (plus de travail par objet) avec des objets lourds, sans pooling.
         try {
@@ -70,6 +88,9 @@ public class PoolBenchmark {
             throw new RuntimeException(e);
         }
 
+        forceCleanup();
+
+
         // Basse fréquence de création/destruction (plus de travail par objet) avec des objets lourds, avec pooling.
         try {
             Logging.info("Executing benchmark : low frequency, heavy object, pooling");
@@ -77,6 +98,9 @@ public class PoolBenchmark {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        forceCleanup();
+
 
         Logging.info("All benchmarks completed");
     }
@@ -248,5 +272,22 @@ public class PoolBenchmark {
 
         executor.shutdown();
         boolean success = executor.awaitTermination(1, TimeUnit.HOURS);
+    }
+
+    private static void forceCleanup() {
+        try {
+            // Suggest explicit garbage collection to the JVM
+            System.gc();
+            // Suggest execution of pending finalizers
+            System.runFinalization();
+
+            // Give the GC background threads a small window to complete their work
+            Thread.sleep(300);
+
+            System.gc(); // Double-check pass
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
