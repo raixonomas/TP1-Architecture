@@ -5,6 +5,7 @@ import com.example.aspecttp.classes.context.Logging;
 import com.example.aspecttp.classes.context.TelemetryContext;
 import com.example.aspecttp.classes.dummyApp.ArrayGenerator;
 import com.example.aspecttp.classes.dummyApp.ArraySorter;
+import com.example.aspecttp.classes.dummyApp.PoolBenchmark;
 import com.example.aspecttp.classes.events.ErrorEvent;
 import com.example.aspecttp.classes.events.LogEvent;
 import com.example.aspecttp.classes.events.MetricEvent;
@@ -83,36 +84,7 @@ public class AppController {
     }
 
     @FXML
-    private void executeRandomOperation() {
-        var arrayGenerator = new ArrayGenerator(-1000,1000);
-        var array = arrayGenerator.generateRandomArray();
-
-        var rand = new Random();
-        int randomMethod = rand.nextInt(0, 5);
-        switch (randomMethod) {
-            case 0 -> {
-                ArraySorter.insertSort(array);
-            }
-
-            case 1 -> {
-                ArraySorter.selectionSort(array);
-            }
-
-            case 2 -> {
-                ArraySorter.bubbleSort(array);
-            }
-
-            case 3 -> {
-                ArraySorter.mergeSort(array);
-            }
-
-            case 4 -> {
-                ArraySorter.quickSort(array,0, array.length-1);
-            }
-
-            default -> throw new IllegalStateException("Unexpected value: " + randomMethod);
-        }
-
-        Logging.info(java.util.Arrays.toString(array));
+    private void executeRandomOperation() throws InterruptedException {
+        PoolBenchmark.benchmarkHighFrequencyLightObject();
     }
 }

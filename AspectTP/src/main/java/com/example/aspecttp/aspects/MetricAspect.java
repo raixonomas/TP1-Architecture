@@ -13,7 +13,7 @@ import java.util.Map;
 @Aspect
 public class MetricAspect {
 
-    @Around("execution(* com.example.aspecttp.classes.dummyApp..*(..))")
+    @Around("execution(* com.example.aspecttp.classes.dummyApp.PoolBenchmark..*(..))")
     public Object measureMetrics(ProceedingJoinPoint pjp) throws Throwable {
 
         Runtime runtime = Runtime.getRuntime();
