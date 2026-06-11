@@ -85,7 +85,6 @@ public class AppController {
     private void executeRandomOperation() throws InterruptedException {
         CachingBenchmark.startCachingBenchmark();
         PoolBenchmark.startPoolBenchmark();
-
     }
 
     @FXML
